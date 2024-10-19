@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '/widgets/custom_appBar.dart';
+import '/widgets/custom_drawer.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,31 +13,12 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(
+      appBar: const CustomAppBar(
         title: 'Home',
         isLoggedIn: true,
         userImageUrl: 'assets/images/moodle.png',
       ),
-      endDrawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue[800],
-              ),
-              child: const Text('User Name', style: TextStyle(color: Colors.white, fontSize: 24)),
-            ),
-            const ListTile(
-              title: Text('Profile'),
-            ),
-            const ListTile(
-              title: Text('Settings'),
-            ),
-            // Add more options here
-          ],
-        ),
-      ),
+      endDrawer: const CustomDrawer(),
       body: const Center(
         child: Text('Welcome to the Moodle App'),
       ),
