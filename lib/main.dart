@@ -24,7 +24,8 @@ class MyApp extends StatelessWidget {
         '/login': (context) => LoginScreen(),
         '/register': (context) => RegisterScreen(),
         '/home': (context) => const HomeScreen(),
-        '/course-details': (context) => const CoursesScreen(),
+        '/course': (context) => CoursesScreen(),
+
       },
     );
   }

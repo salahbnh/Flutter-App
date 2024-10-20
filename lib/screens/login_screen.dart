@@ -11,6 +11,7 @@ class LoginScreen extends StatelessWidget {
       appBar: CustomAppBar(
         title: 'Loggin',
         isLoggedIn: false,
+
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -47,7 +48,7 @@ class LoginScreen extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/home');
+                Navigator.pushReplacementNamed(context, '/home');
               },
               child: Center(
                 child: Text(

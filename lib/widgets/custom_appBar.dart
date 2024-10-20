@@ -4,12 +4,14 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final bool isLoggedIn;
   final String? userImageUrl;
+  final bool automaticallyImplyLeading;
 
   const CustomAppBar({
     Key? key,
     required this.title,
     required this.isLoggedIn,
     this.userImageUrl,
+    this.automaticallyImplyLeading = true,
   }) : super(key: key);
 
   @override
