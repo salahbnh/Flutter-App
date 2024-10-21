@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '/widgets/custom_appBar.dart';
 import '/widgets/custom_drawer.dart';
-import 'courses_screen.dart';
+import 'CourseListingScreen.dart';
 
 
 class HomeScreen extends StatefulWidget {
@@ -17,7 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _screens = const [
     Center(child: Text('Welcome to the Moodle App')), // Placeholder for Home
-    CoursesScreen(), // Add CoursesScreen here
+  //  MyCoursesScreen(), // Add CoursesScreen here
     Center(child: Text('Notifications')), // Placeholder for Notifications
   ];
 
@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const CustomAppBar(
-        title: 'Home',
+        title: 'MySchool',
         isLoggedIn: true,
         userImageUrl: 'assets/images/moodle.png',
       ),
