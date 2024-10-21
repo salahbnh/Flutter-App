@@ -30,6 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_pdfview: ^1.0.0
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -37,6 +38,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   form_field_validator: ^1.1.0
   fluttertoast: ^8.0.9
+
+
 
 dev_dependencies:
   flutter_test:
