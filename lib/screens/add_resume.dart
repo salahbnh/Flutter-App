@@ -188,6 +188,11 @@ class _AddResumeScreenState extends State<AddResumeScreen> {
                     Navigator.pop(context); // Go back to store screen
                   }
                 },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent, // Updated button color
+                  foregroundColor: Colors.white, // Updated text color
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                ),
                 child: Text('Submit'),
               ),
             ],

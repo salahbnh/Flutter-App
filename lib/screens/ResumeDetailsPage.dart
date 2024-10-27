@@ -22,11 +22,11 @@ class _ResumeDetailsPageState extends State<ResumeDetailsPage> {
         reviews.add({
           'rating': rating,
           'comment': commentController.text,
-          'user': username, // Store the username with the review
+          'user': username,
         });
         commentController.clear();
-        rating = 0.0; // Reset rating after submitting
-        hasRated = true; // Set to true after rating
+        rating = 0.0;
+        hasRated = true;
       });
     }
   }
@@ -60,7 +60,8 @@ class _ResumeDetailsPageState extends State<ResumeDetailsPage> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Card(
-                elevation: 4,
+                elevation: 6,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -71,7 +72,10 @@ class _ResumeDetailsPageState extends State<ResumeDetailsPage> {
                         style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                       ),
                       SizedBox(height: 10),
-                      // Add more information about the resume here...
+                      Text(
+                        widget.resume['description'] ?? "Description not available.",
+                        style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                      ),
                     ],
                   ),
                 ),
@@ -81,12 +85,13 @@ class _ResumeDetailsPageState extends State<ResumeDetailsPage> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Card(
-                elevation: 4,
+                elevation: 6,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
-                      Text("Modules will go here..."),
+                      Text("Modules will go here...", style: TextStyle(fontSize: 18, color: Colors.grey[600])),
                       // Add module details...
                     ],
                   ),
@@ -100,8 +105,17 @@ class _ResumeDetailsPageState extends State<ResumeDetailsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Average rating display
-                  Text("Average Rating: ${averageRating.toStringAsFixed(1)}", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Text("Average Rating:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      SizedBox(width: 10),
+                      Text(
+                        averageRating.toStringAsFixed(1),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.amber),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 20),
                   // Star rating section
                   Text("Rate this Resume:", style: TextStyle(fontSize: 18)),
                   Row(
@@ -110,12 +124,13 @@ class _ResumeDetailsPageState extends State<ResumeDetailsPage> {
                         icon: Icon(
                           index < rating ? Icons.star : Icons.star_border,
                           color: Colors.amber,
+                          size: 30,
                         ),
                         onPressed: hasRated
-                            ? null // Disable rating if already rated
+                            ? null
                             : () {
                           setState(() {
-                            rating = index + 1.0; // Update rating
+                            rating = index + 1.0;
                           });
                         },
                       );
@@ -125,29 +140,65 @@ class _ResumeDetailsPageState extends State<ResumeDetailsPage> {
                     controller: commentController,
                     decoration: InputDecoration(
                       labelText: "Leave a comment",
-                      border: OutlineInputBorder(),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                       filled: true,
                       fillColor: Colors.grey[200],
                     ),
-                    enabled: !hasRated, // Disable comment field if already rated
+                    maxLines: 3,
+                    enabled: !hasRated,
                   ),
                   SizedBox(height: 10),
                   ElevatedButton(
-                    onPressed: hasRated ? null : _submitReview, // Disable button if already rated
+                    onPressed: hasRated ? null : _submitReview,
                     child: Text("Submit Review"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent, // Updated color parameter
+                      foregroundColor: Colors.white, // Updated text color parameter
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    ),
                   ),
                   SizedBox(height: 20),
-                  // Display reviews
                   Text("Reviews:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 10),
                   Expanded(
                     child: ListView.builder(
                       itemCount: reviews.length,
                       itemBuilder: (context, index) {
                         return Card(
-                          margin: EdgeInsets.symmetric(vertical: 5),
-                          child: ListTile(
-                            title: Text("Rating: ${reviews[index]['rating']} - ${reviews[index]['user']}", style: TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Text(reviews[index]['comment']),
+                          elevation: 3,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          margin: EdgeInsets.symmetric(vertical: 8),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      reviews[index]['user'],
+                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                    ),
+                                    Row(
+                                      children: List.generate(5, (starIndex) {
+                                        return Icon(
+                                          starIndex < reviews[index]['rating'] ? Icons.star : Icons.star_border,
+                                          color: Colors.amber,
+                                          size: 20,
+                                        );
+                                      }),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 5),
+                                Text(
+                                  reviews[index]['comment'],
+                                  style: TextStyle(color: Colors.grey[700]),
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       },
