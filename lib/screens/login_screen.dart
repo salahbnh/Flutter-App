@@ -11,6 +11,7 @@ class LoginScreen extends StatelessWidget {
       appBar: CustomAppBar(
         title: 'Loggin',
         isLoggedIn: false,
+        backgroundColor: Colors.blue[600]!,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -47,13 +48,13 @@ class LoginScreen extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/home');
+                Navigator.pushReplacementNamed(context, '/home');
               },
               child: Center(
-                child: Text(
-                  'Login',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: Colors.blue[800]),
-              )
+                  child: Text(
+                    'Login',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: Colors.blue[800]),
+                  )
               ),
             ),
             const SizedBox(height: 8),
