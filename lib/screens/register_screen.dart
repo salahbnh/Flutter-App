@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '/widgets/role_selection.dart';
 import '/widgets/signup_form.dart';
+import '../services/user_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -10,10 +11,8 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   String role = ''; // Role attribute (student or instructor)
 
-  void onRegister(String email, String password) {
-    // Handle the registration logic here
-    // For example, you can navigate to another screen or show a success message
-    print('Registered as $role with email: $email');
+  void onRegister(String username, String email, String password) {
+    UserService.registerUser(username, email, password, role);
   }
 
   @override

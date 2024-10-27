@@ -9,7 +9,7 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const CustomAppBar(
-        title: 'Loggin',
+        title: 'Login',
         isLoggedIn: false,
       ),
       body: Padding(

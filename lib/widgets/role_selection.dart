@@ -33,7 +33,7 @@ class RoleSelection extends StatelessWidget {
                   width: 45,
                 ),
                 Text(
-                  'Welcome to Moodle',
+                  'Welcome to MySchool',
                   style: TextStyle (
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
