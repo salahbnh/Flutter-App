@@ -39,6 +39,8 @@ dependencies:
   fluttertoast: ^8.0.9
   image_picker: ^0.8.7 # Use the latest version
   file_picker: ^5.0.2
+  http: ^1.2.2  # Update this line to a compatible version
+  shared_preferences: ^2.0.0
 
 
 
