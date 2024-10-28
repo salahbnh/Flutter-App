@@ -9,10 +9,41 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  String role = ''; // Role attribute (student or instructor)
+  final AuthService authService = AuthService();
+  String role = '';
+  bool isLoading = false;
 
-  void onRegister(String username, String email, String password) {
-    UserService.registerUser(username, email, password, role);
+  Future<void> onRegister(String username, String email, String password) async {
+    setState(() {
+      isLoading = true;
+    });
+
+    // Attempt to sign up the user
+    bool success = await authService.signup(username, email, password, role);
+
+    setState(() {
+      isLoading = false;
+    });
+
+    if (success) {
+      // Navigate to the home page if registration is successful
+      Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      // Show an alert dialog if signup failed
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Signup Failed'),
+          content: Text('Could not sign up. Please try again.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   @override
@@ -36,12 +67,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
               RoleSelection(
                 onStudentSelected: () {
                   setState(() {
-                    role = 'student';
+                    role = 'Student';
                   });
                 },
                 onInstructorSelected: () {
                   setState(() {
-                    role = 'instructor';
+                    role = 'Instructor';
                   });
                 },
               ),
@@ -49,6 +80,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               SignUpForm(
                 role: role,
                 onRegister: onRegister,
+                isLoading: isLoading, // Pass loading state to form
               ),
           ],
         ),
