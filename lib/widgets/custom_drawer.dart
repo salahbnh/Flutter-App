@@ -29,7 +29,7 @@ class CustomDrawer extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Sfaihi Ahmed',
+                          'UserName',
                           style: TextStyle(color: Colors.white, fontSize: 26),
                         ),
                         Row(
@@ -62,6 +62,13 @@ class CustomDrawer extends StatelessWidget {
               Navigator.pushNamed(context, '/roundTablesWebinars'); // Route for the module
             },
           ),
+          ListTile(
+            leading: const Icon(Icons.book), // You can change the icon as needed
+            title: const Text('Exams'), // Title for the Exams screen
+            onTap: () {
+              Navigator.pushNamed(context, '/exams'); // Route for the Exams screen
+            },
+          ),
           const ListTile(
             leading: Icon(Icons.settings),
             title: Text('Settings'),
@@ -70,7 +77,6 @@ class CustomDrawer extends StatelessWidget {
             leading: Icon(Icons.logout),
             title: Text('Logout'),
           ),
-
         ],
       ),
     );
