@@ -16,7 +16,7 @@ class CustomDrawer extends StatelessWidget {
             ),
             child: Column(
               children: [
-                const SizedBox(height: 40,),
+                const SizedBox(height: 40),
                 Row(
                   children: [
                     const CircleAvatar(
@@ -26,6 +26,7 @@ class CustomDrawer extends StatelessWidget {
                     ),
                     const SizedBox(width: 16),
                     Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
                           'UserName',
@@ -54,6 +55,13 @@ class CustomDrawer extends StatelessWidget {
               Navigator.pushNamed(context, '/profile');
             },
           ),
+          ListTile(
+            leading: const Icon(Icons.video_library), // Icon for the module
+            title: const Text('Round Tables & Webinars'), // Title in English
+            onTap: () {
+              Navigator.pushNamed(context, '/roundTablesWebinars'); // Route for the module
+            },
+          ),
           const ListTile(
             leading: Icon(Icons.settings),
             title: Text('Settings'),
@@ -62,6 +70,7 @@ class CustomDrawer extends StatelessWidget {
             leading: Icon(Icons.logout),
             title: Text('Logout'),
           ),
+
         ],
       ),
     );
