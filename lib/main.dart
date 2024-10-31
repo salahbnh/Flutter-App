@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moodle_app/screens/webinars_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/home_screen.dart';
@@ -26,8 +27,8 @@ class MyApp extends StatelessWidget {
         '/register': (context) => RegisterScreen(),
         '/home': (context) => const HomeScreen(),
         '/profile': (context) => const ProfileScreen(),
+        '/roundTablesWebinars': (context) => const RoundTablesWebinarsScreen(), // Add the new route
       },
-
     );
   }
 }
