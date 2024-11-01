@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'ResumeDetailsPage.dart';
 import 'add_resume.dart';
 import 'PaymentPage.dart';
+import '../services/resume-service.dart';
 
 class StoreScreen extends StatefulWidget {
   @override
@@ -9,49 +10,36 @@ class StoreScreen extends StatefulWidget {
 }
 
 class _StoreScreenState extends State<StoreScreen> {
-  final List<Map<String, dynamic>> storeCourses = [
-    {
-      "title": "Store Course 1",
-      "classLevel": "Grade 12",
-      "price": 30.0,
-      "reference": "Physics",
-      "owner": "User C",
-      "description": "An in-depth course on Grade 12 Physics.",
-      "averageRating": 4.5,
-    },
-    {
-      "title": "Store Course 2",
-      "classLevel": "Grade 11",
-      "price": 25.0,
-      "reference": "Chemistry",
-      "owner": "User D",
-      "description": "A comprehensive course on Chemistry.",
-      "averageRating": 3.8,
-    },
-    // Add more store courses as needed...
-  ];
+  final ResumeService resumeService = ResumeService();
+  List<Map<String, dynamic>> storeCourses = [];
+  List<Map<String, dynamic>> cart = [];
 
-  List<Map<String, dynamic>> cart = []; // List to hold selected courses for payment
+  @override
+  void initState() {
+    super.initState();
+    _fetchResumes();
+  }
+
+  void _fetchResumes() async {
+    List<Map<String, dynamic>> fetchedResumes = await resumeService.getAllResumes();
+    setState(() {
+      storeCourses = fetchedResumes;
+    });
+  }
 
   void _addToCart(Map<String, dynamic> course) {
     setState(() {
-      cart.add(course); // Add the selected course to the cart
+      cart.add(course);
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('${course['title']} added to cart!')),
     );
   }
 
-  void _onResumeAdded(Map<String, dynamic> newResume) {
-    print("New Resume Added: $newResume");
-  }
-
   void _addCourse() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => AddResumeScreen(onResumeAdded: _onResumeAdded),
-      ),
+      MaterialPageRoute(builder: (context) => AddResumeScreen()),
     );
   }
 
@@ -127,7 +115,7 @@ class _StoreScreenState extends State<StoreScreen> {
                 child: Slider(
                   value: selectedMaxPrice,
                   min: 0,
-                  max: 100.0,
+                  max: 500.0,
                   divisions: 10,
                   label: 'Max Price: \$${selectedMaxPrice.round()}',
                   onChanged: (value) {
@@ -160,9 +148,7 @@ class _StoreScreenState extends State<StoreScreen> {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => ResumeDetailsPage(resume: course),
-              ),
+              MaterialPageRoute(builder: (context) => ResumeDetailsPage(resume: course)),
             );
           },
           child: Card(
@@ -183,7 +169,7 @@ class _StoreScreenState extends State<StoreScreen> {
               ),
               trailing: IconButton(
                 icon: Icon(Icons.add_shopping_cart),
-                onPressed: () => _addToCart(course), // Add course to cart
+                onPressed: () => _addToCart(course),
               ),
             ),
           ),
@@ -218,7 +204,7 @@ class _StoreScreenState extends State<StoreScreen> {
                           cart: cart,
                           onRemoveFromCart: (course) {
                             setState(() {
-                              cart.remove(course); // Remove the course from the cart
+                              cart.remove(course);
                             });
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text('${course['title']} removed from cart!')),
@@ -264,27 +250,7 @@ class _StoreScreenState extends State<StoreScreen> {
               child: TabBarView(
                 children: [
                   _buildCourseList(storeCourses),
-                  DefaultTabController(
-                    length: 2,
-                    child: Column(
-                      children: [
-                        TabBar(
-                          tabs: [
-                            Tab(text: 'Completed Courses'),
-                            Tab(text: 'Progress Courses'),
-                          ],
-                        ),
-                        Expanded(
-                          child: TabBarView(
-                            children: [
-                              _buildCourseList([]), // Empty for now
-                              _buildCourseList([]), // Empty for now
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  Center(child: Text('My Courses')), // Placeholder for 'My Courses' tab
                 ],
               ),
             ),
@@ -292,7 +258,6 @@ class _StoreScreenState extends State<StoreScreen> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: _addCourse,
-          tooltip: 'Add Course',
           child: Icon(Icons.add),
         ),
       ),

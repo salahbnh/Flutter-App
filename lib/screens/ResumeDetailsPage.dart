@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/resume-service.dart'; // Adjust the import path accordingly
 
 class ResumeDetailsPage extends StatefulWidget {
   final Map<String, dynamic> resume;
@@ -15,8 +16,9 @@ class _ResumeDetailsPageState extends State<ResumeDetailsPage> {
   TextEditingController commentController = TextEditingController();
   String username = "User A"; // Replace with actual user data
   bool hasRated = false; // Track if the user has already rated
+  final ResumeService resumeService = ResumeService(); // Set your base URL
 
-  void _submitReview() {
+  Future<void> _submitReview() async {
     if (commentController.text.isNotEmpty && !hasRated) {
       setState(() {
         reviews.add({
@@ -24,10 +26,17 @@ class _ResumeDetailsPageState extends State<ResumeDetailsPage> {
           'comment': commentController.text,
           'user': username,
         });
-        commentController.clear();
-        rating = 0.0;
         hasRated = true;
       });
+
+      try {
+        await resumeService.addComment(widget.resume['_id'], username, commentController.text);
+        commentController.clear();
+        rating = 0.0;
+      } catch (error) {
+        print('Error submitting comment: $error');
+        // Optionally, display an error message to the user
+      }
     }
   }
 
@@ -73,7 +82,22 @@ class _ResumeDetailsPageState extends State<ResumeDetailsPage> {
                       ),
                       SizedBox(height: 10),
                       Text(
-                        widget.resume['description'] ?? "Description not available.",
+                        "Reference: ${widget.resume['reference'] ?? 'N/A'}",
+                        style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        "Level: ${widget.resume['level'] ?? 'N/A'}",
+                        style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        "Price: \$${widget.resume['price'] ?? 'N/A'}",
+                        style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        "Owner: ${widget.resume['owner'] ?? 'N/A'}",
                         style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                       ),
                     ],
@@ -81,7 +105,7 @@ class _ResumeDetailsPageState extends State<ResumeDetailsPage> {
                 ),
               ),
             ),
-            // Modules Tab
+            // Modules Tab (displaying Description)
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Card(
@@ -90,9 +114,17 @@ class _ResumeDetailsPageState extends State<ResumeDetailsPage> {
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Modules will go here...", style: TextStyle(fontSize: 18, color: Colors.grey[600])),
-                      // Add module details...
+                      Text(
+                        "Description:",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        widget.resume['description'] ?? "Description not available.",
+                        style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                      ),
                     ],
                   ),
                 ),
@@ -152,8 +184,8 @@ class _ResumeDetailsPageState extends State<ResumeDetailsPage> {
                     onPressed: hasRated ? null : _submitReview,
                     child: Text("Submit Review"),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent, // Updated color parameter
-                      foregroundColor: Colors.white, // Updated text color parameter
+                      backgroundColor: Colors.blueAccent,
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     ),

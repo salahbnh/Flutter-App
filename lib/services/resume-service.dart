@@ -1,72 +1,84 @@
-import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-
+import 'dart:convert';
 
 class ResumeService {
-  final String baseUrl = 'http://10.0.2.2:3000'; // Change to your backend URL
+  final String baseUrl = 'http://10.0.2.2:3000'; // Change to your server's IP if necessary
 
-  // Function to add a new resume
-  Future<bool> addResume(Map<String, dynamic> resumeData) async {
-    final url = Uri.parse('$baseUrl/api/resumes');
+  Future<bool> addResume(Map<String, dynamic> resumeData, String? pdfFilePath) async {
+    final url = Uri.parse('$baseUrl/api/resume'); // Update the endpoint as necessary
+
+    print('Preparing to send resume data: $resumeData'); // Debugging line
 
     try {
+      // Prepare the request body
+      Map<String, dynamic> requestBody = {
+        "title": resumeData['title'],
+        "reference": resumeData['reference'],
+        "level": resumeData['level'],
+        "price": resumeData['price'],
+        "owner": resumeData['owner'],
+        "description": resumeData['description'],
+        // Add filePath if needed, but ensure your API can handle it
+        "filePath": pdfFilePath, // Adjust based on how your API handles file uploads
+      };
+
+      print('Sending POST request to $url'); // Debugging line
+
+      // Send the POST request with an extended timeout
       final response = await http.post(
         url,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: jsonEncode(resumeData),
-      );
+        body: jsonEncode(requestBody),
+      ).timeout(Duration(seconds: 50)); // Increased timeout
 
-      return response.statusCode == 201; // Check if the request was successful
+      // Log the response status and body
+      print('Response status: ${response.statusCode}'); // Log the status
+      print('Response body: ${response.body}'); // Log the body
+
+      // Check if the response status code indicates success
+      return response.statusCode == 201; // Successful creation
     } catch (error) {
-      print('Add Resume error: $error');
-      return false;
+      print('Error adding resume: $error'); // Log the error
+      return false; // Return false in case of an error
     }
   }
 
-  // Function to get all resumes
-  Future<List<dynamic>> getResumes() async {
-    final url = Uri.parse('$baseUrl/api/resumes');
 
+  Future<List<Map<String, dynamic>>> getAllResumes() async {
+    final url = Uri.parse('$baseUrl/api/resume'); // Adjust the endpoint as necessary
     try {
       final response = await http.get(url);
+
       if (response.statusCode == 200) {
-        return jsonDecode(response.body); // Return the list of resumes
+        // Parse and return the list of resumes
+        List<dynamic> data = jsonDecode(response.body);
+        return data.cast<Map<String, dynamic>>();
       } else {
+        print('Failed to load resumes: ${response.statusCode}');
         return [];
       }
     } catch (error) {
-      print('Get Resumes error: $error');
+      print('Error fetching resumes: $error');
       return [];
     }
   }
 
-  // Function to rate a resume
-  Future<bool> rateResume(String resumeId, double rating, String comment) async {
-    final url = Uri.parse('$baseUrl/api/resumes/rate');
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token'); // Get the token from shared preferences
+  Future<void> addComment(String resumeId, String user, String comment) async {
+    final url = '$baseUrl/resume/$resumeId/comment'; // Construct the URL
 
-    try {
-      final response = await http.put(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token', // Add token for authorization
-        },
-        body: jsonEncode({
-          'resumeId': resumeId,
-          'rating': rating,
-          'comment': comment,
-        }),
-      );
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'user': user,
+        'comment': comment,
+      }),
+    );
 
-      return response.statusCode == 200; // Check if the request was successful
-    } catch (error) {
-      print('Rate Resume error: $error');
-      return false;
+    if (response.statusCode != 200) {
+      throw Exception('Failed to add comment: ${response.body}');
     }
   }
 }
