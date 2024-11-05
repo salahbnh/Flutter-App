@@ -59,7 +59,7 @@ class CustomDrawer extends StatelessWidget {
             leading: const Icon(Icons.video_library), // Icon for the module
             title: const Text('Round Tables & Webinars'), // Title in English
             onTap: () {
-              Navigator.pushNamed(context, '/roundTablesWebinars'); // Route for the module
+              Navigator.pushNamed(context, '/roundTablesWebinars');
             },
           ),
           ListTile(
