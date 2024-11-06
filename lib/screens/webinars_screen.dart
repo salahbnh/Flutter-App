@@ -1,23 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:moodle_app/screens/addwebinars_screen.dart';
-import '/widgets/custom_appBar.dart';
-import '/widgets/custom_drawer.dart';
-
-class Webinar {
-  final String title;
-  final String description;
-  final DateTime date;
-  final int duration;
-  final int maxParticipants;
-
-  Webinar({
-    required this.title,
-    required this.description,
-    required this.date,
-    required this.duration,
-    required this.maxParticipants,
-  });
-}
+import 'dart:convert';
+import '../models/webinar.dart';
+import 'webinarsdetails_screen.dart';
 
 class RoundTablesWebinarsScreen extends StatefulWidget {
   const RoundTablesWebinarsScreen({super.key});
@@ -27,47 +13,55 @@ class RoundTablesWebinarsScreen extends StatefulWidget {
 }
 
 class _RoundTablesWebinarsScreenState extends State<RoundTablesWebinarsScreen> {
-  final List<Webinar> webinars = [
-    Webinar(
-      title: 'Flutter Basics',
-      description: 'Learn the fundamentals of Flutter and how to build apps.',
-      date: DateTime.now().add(Duration(days: 1)),
-      duration: 60,
-      maxParticipants: 100,
-    ),
-    Webinar(
-      title: 'Dart for Beginners',
-      description: 'An introduction to Dart programming language.',
-      date: DateTime.now().add(Duration(days: 2)),
-      duration: 45,
-      maxParticipants: 50,
-    ),
-    Webinar(
-      title: 'Advanced Flutter Techniques',
-      description: 'Explore advanced features in Flutter for building complex apps.',
-      date: DateTime.now().add(Duration(days: 3)),
-      duration: 90,
-      maxParticipants: 75,
-    ),
-  ];
+  List<Webinar> webinars = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchWebinars();
+  }
+
+  Future<void> _fetchWebinars() async {
+    final url = Uri.parse('http://192.168.56.1:3005/webinars');
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> webinarData = json.decode(response.body);
+        setState(() {
+          webinars = webinarData.map((json) => Webinar.fromJson(json)).toList();
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to load webinars');
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading webinars: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(
-        title: 'Round Tables & Webinars',
-        isLoggedIn: true,
-        userImageUrl: 'assets/images/moodle.png',
+      appBar: AppBar(
+        title: const Text('Round Tables & Webinars'),
       ),
-      endDrawer: const CustomDrawer(),
-      body: ListView.builder(
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView.builder(
         itemCount: webinars.length,
         itemBuilder: (context, index) {
           final webinar = webinars[index];
           return Card(
             margin: const EdgeInsets.all(8.0),
             child: ListTile(
-              leading: const Icon(Icons.video_call), // Icon for the webinar
+              leading: const Icon(Icons.video_call),
               title: Text(webinar.title),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,59 +74,31 @@ class _RoundTablesWebinarsScreenState extends State<RoundTablesWebinarsScreen> {
                 ],
               ),
               isThreeLine: true,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => WebinarDetailsScreen(webinar: webinar),
+                  ),
+                );
+              },
             ),
           );
         },
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.event),
-            label: 'Events',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.video_call),
-            label: 'Webinars',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: 'Participants',
-          ),
-        ],
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _showCreateWebinarMenu(context);
+          // Navigate to the Add Webinar screen
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AddWebinarScreen(),
+            ),
+          );
         },
         child: const Icon(Icons.add),
+        tooltip: 'Add Webinar',
       ),
     );
-  }
-
-  void _showCreateWebinarMenu(BuildContext context) {
-    showMenu(
-      context: context,
-      position: RelativeRect.fromLTRB(100, 700, 0, 0), // Adjust position as needed
-      items: [
-        PopupMenuItem(
-          child: TextButton(
-            onPressed: () {
-              Navigator.pop(context); // Close the menu
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AddWebinarScreen()), // Navigate to the AddWebinarScreen
-              );
-            },
-            child: const Text('Create New Webinar'),
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _createNewWebinar() {
-    // Logic for creating a new webinar
-    // You might want to navigate to another screen or show a dialog
-    print('Create New Webinar button pressed');
   }
 }

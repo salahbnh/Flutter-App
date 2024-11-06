@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class AddWebinarScreen extends StatefulWidget {
-  const AddWebinarScreen({Key? key}) : super(key: key);
+  const AddWebinarScreen({super.key});
 
   @override
   State<AddWebinarScreen> createState() => _AddWebinarScreenState();
@@ -9,111 +11,51 @@ class AddWebinarScreen extends StatefulWidget {
 
 class _AddWebinarScreenState extends State<AddWebinarScreen> {
   final _formKey = GlobalKey<FormState>();
-  String title = '';
-  String description = '';
-  DateTime date = DateTime.now();
-  int duration = 0;
-  int maxParticipants = 0;
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Add New Webinar'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Title'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a title';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  title = value!;
-                },
-              ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Description'),
-                maxLines: 3,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a description';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  description = value!;
-                },
-              ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Date & Time'),
-                readOnly: true,
-                onTap: () async {
-                  final DateTime? picked = await showDateTimePicker(context);
-                  if (picked != null && picked != date) {
-                    setState(() {
-                      date = picked;
-                    });
-                  }
-                },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please select a date and time';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Duration (minutes)'),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter the duration';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  duration = int.parse(value!);
-                },
-              ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Max Participants'),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter the max number of participants';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  maxParticipants = int.parse(value!);
-                },
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    _formKey.currentState!.save();
-                    // Handle the addition of the webinar here (e.g., send to backend)
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Webinar Added: $title')),
-                    );
-                  }
-                },
-                child: const Text('Add Webinar'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+  // TextEditingControllers for the fields
+  final titleController = TextEditingController();
+  final descriptionController = TextEditingController();
+  final durationController = TextEditingController();
+  final maxParticipantsController = TextEditingController();
+  final meetLinkController = TextEditingController();
+  final dateController = TextEditingController();
+
+  DateTime date = DateTime.now();
+
+  Future<void> _addWebinar() async {
+    final url = Uri.parse('http://192.168.56.1:3005/webinars');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'title': titleController.text,
+          'description': descriptionController.text,
+          'date': date.toIso8601String(),
+          'duration': int.parse(durationController.text),
+          'maxParticipants': int.parse(maxParticipantsController.text),
+          'meetLink': meetLinkController.text,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Webinar Added Successfully!')),
+        );
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to add webinar: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
   }
 
   Future<DateTime?> showDateTimePicker(BuildContext context) async {
@@ -142,5 +84,121 @@ class _AddWebinarScreenState extends State<AddWebinarScreen> {
     }
 
     return null;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    dateController.text = date.toLocal().toString();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Add New Webinar'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: titleController,
+                decoration: const InputDecoration(labelText: 'Title'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a title';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: descriptionController,
+                decoration: const InputDecoration(labelText: 'Description'),
+                maxLines: 3,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a description';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: dateController,
+                decoration: const InputDecoration(labelText: 'Date & Time'),
+                readOnly: true,
+                onTap: () async {
+                  final DateTime? picked = await showDateTimePicker(context);
+                  if (picked != null) {
+                    setState(() {
+                      date = picked;
+                      dateController.text = date.toLocal().toString();
+                    });
+                  }
+                },
+                validator: (value) {
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: durationController,
+                decoration: const InputDecoration(labelText: 'Duration (minutes)'),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the duration';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: maxParticipantsController,
+                decoration: const InputDecoration(labelText: 'Max Participants'),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the max number of participants';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: meetLinkController,
+                decoration: const InputDecoration(labelText: 'Meet Link'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the meet link';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    _addWebinar();
+                  }
+                },
+                child: const Text('Add Webinar'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    // Dispose controllers
+    titleController.dispose();
+    descriptionController.dispose();
+    durationController.dispose();
+    maxParticipantsController.dispose();
+    meetLinkController.dispose();
+    dateController.dispose();
+    super.dispose();
   }
 }

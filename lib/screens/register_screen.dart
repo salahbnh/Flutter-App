@@ -3,6 +3,8 @@ import '/widgets/role_selection.dart';
 import '/widgets/signup_form.dart';
 
 class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
+
   @override
   _RegisterScreenState createState() => _RegisterScreenState();
 }

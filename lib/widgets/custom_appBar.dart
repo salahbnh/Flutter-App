@@ -6,11 +6,11 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? userImageUrl;
 
   const CustomAppBar({
-    Key? key,
+    super.key,
     required this.title,
     required this.isLoggedIn,
     this.userImageUrl,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
