@@ -18,6 +18,24 @@ class _ResumeDetailsPageState extends State<ResumeDetailsPage> {
   bool hasRated = false; // Track if the user has already rated
   final ResumeService resumeService = ResumeService(); // Set your base URL
 
+  @override
+  void initState() {
+    super.initState();
+    _fetchComments();
+  }
+
+  Future<void> _fetchComments() async {
+    try {
+      final fetchedReviews = await resumeService.getAllComments(widget.resume['_id']);
+      setState(() {
+        reviews = fetchedReviews;
+      });
+    } catch (error) {
+      print('Error fetching comments: $error');
+      // Optionally, display an error message to the user
+    }
+  }
+
   Future<void> _submitReview() async {
     if (commentController.text.isNotEmpty && !hasRated) {
       setState(() {
@@ -30,19 +48,32 @@ class _ResumeDetailsPageState extends State<ResumeDetailsPage> {
       });
 
       try {
+        // First, add the rating to the backend
+        await resumeService.addRating(widget.resume['_id'], rating);
+
+        // Then, add the comment to the backend
         await resumeService.addComment(widget.resume['_id'], username, commentController.text);
+
         commentController.clear();
-        rating = 0.0;
+        rating = 0.0; // Reset rating after submission
       } catch (error) {
-        print('Error submitting comment: $error');
+        print('Error submitting review: $error');
         // Optionally, display an error message to the user
+        setState(() {
+          hasRated = false; // Reset hasRated if submission fails
+        });
       }
     }
   }
 
+
   double _calculateAverageRating() {
     if (reviews.isEmpty) return 0.0;
-    double total = reviews.fold(0, (sum, review) => sum + review['rating']);
+    double total = reviews.fold(0, (sum, review) {
+      // Ensure rating is treated as 0 if null
+      double reviewRating = review['rating'] ?? 0.0;
+      return sum + reviewRating;
+    });
     return total / reviews.length;
   }
 
@@ -216,7 +247,7 @@ class _ResumeDetailsPageState extends State<ResumeDetailsPage> {
                                     Row(
                                       children: List.generate(5, (starIndex) {
                                         return Icon(
-                                          starIndex < reviews[index]['rating'] ? Icons.star : Icons.star_border,
+                                          starIndex < (reviews[index]['rating'] ?? 0.0) ? Icons.star : Icons.star_border,
                                           color: Colors.amber,
                                           size: 20,
                                         );

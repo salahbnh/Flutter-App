@@ -11,19 +11,28 @@ class StoreScreen extends StatefulWidget {
 
 class _StoreScreenState extends State<StoreScreen> {
   final ResumeService resumeService = ResumeService();
-  List<Map<String, dynamic>> storeCourses = [];
+  List<Map<String, dynamic>> unpaidCourses = [];
+  List<Map<String, dynamic>> paidCourses = [];
   List<Map<String, dynamic>> cart = [];
 
   @override
   void initState() {
     super.initState();
-    _fetchResumes();
+    _fetchUnpaidCourses();
+    _fetchPaidCourses();
   }
 
-  void _fetchResumes() async {
-    List<Map<String, dynamic>> fetchedResumes = await resumeService.getAllResumes();
+  void _fetchUnpaidCourses() async {
+    List<Map<String, dynamic>> fetchedUnpaidCourses = await resumeService.getUnpaidCourses();
     setState(() {
-      storeCourses = fetchedResumes;
+      unpaidCourses = fetchedUnpaidCourses;
+    });
+  }
+
+  void _fetchPaidCourses() async {
+    List<Map<String, dynamic>> fetchedPaidCourses = await resumeService.fetchPaidCourses();
+    setState(() {
+      paidCourses = fetchedPaidCourses;
     });
   }
 
@@ -49,8 +58,8 @@ class _StoreScreenState extends State<StoreScreen> {
   double selectedMaxPrice = 100.0;
   String selectedLevel = 'All';
 
-  List<String> references = ['All', 'Mathematics', 'Science', 'Physics', 'Chemistry', 'Biology'];
-  List<String> levels = ['All', 'Grade 10', 'Grade 11', 'Grade 12'];
+  List<String> references = ['All', 'Math', 'Science', 'Physics', 'Chemistry', 'Biology'];
+  List<String> levels = ['All', 'Beginner', 'Intermediate', 'Advanced'];
 
   Widget _buildSearchAndFilter() {
     return Padding(
@@ -132,11 +141,16 @@ class _StoreScreenState extends State<StoreScreen> {
     );
   }
 
+  double _calculateAverageRating(List<dynamic> ratings) {
+    if (ratings.isEmpty) return 0.0;
+    return ratings.reduce((a, b) => a + b) / ratings.length;
+  }
+
   Widget _buildCourseList(List<Map<String, dynamic>> courses) {
     final filteredCourses = courses.where((course) {
       final matchesSearch = searchQuery.isEmpty || course['title'].toLowerCase().contains(searchQuery.toLowerCase());
       final matchesReference = selectedReference == 'All' || course['reference'] == selectedReference;
-      final matchesLevel = selectedLevel == 'All' || course['classLevel'] == selectedLevel;
+      final matchesLevel = selectedLevel == 'All' || course['level']?.toLowerCase().trim() == selectedLevel.toLowerCase().trim();
       return matchesSearch && matchesReference && matchesLevel && (course['price'] == null || course['price'] <= selectedMaxPrice);
     }).toList();
 
@@ -144,6 +158,8 @@ class _StoreScreenState extends State<StoreScreen> {
       itemCount: filteredCourses.length,
       itemBuilder: (context, index) {
         final course = filteredCourses[index];
+        final averageRating = _calculateAverageRating(course['ratings'] ?? []); // Assuming course has 'ratings' field
+
         return GestureDetector(
           onTap: () {
             Navigator.push(
@@ -159,12 +175,11 @@ class _StoreScreenState extends State<StoreScreen> {
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Level: ${course['classLevel']}"),
+                  Text("Level: ${course['level']}"),
                   Text("Reference: ${course['reference']}"),
                   Text("Owner: ${course['owner']}"),
                   if (course.containsKey('price')) Text("Price: \$${course['price']}"),
-                  if (course.containsKey('averageRating'))
-                    Text("Average Rating: ${course['averageRating'].toStringAsFixed(1)}", style: TextStyle(color: Colors.amber)),
+                  Text(" Rating: ${averageRating.toStringAsFixed(1)}", style: TextStyle(color: Colors.amber)),
                 ],
               ),
               trailing: IconButton(
@@ -249,8 +264,8 @@ class _StoreScreenState extends State<StoreScreen> {
             Expanded(
               child: TabBarView(
                 children: [
-                  _buildCourseList(storeCourses),
-                  Center(child: Text('My Courses')), // Placeholder for 'My Courses' tab
+                  _buildCourseList(unpaidCourses),
+                  _buildCourseList(paidCourses),
                 ],
               ),
             ),

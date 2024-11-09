@@ -184,7 +184,7 @@ class _AddResumeScreenState extends State<AddResumeScreen> {
                       "level": selectedLevel,
                       "price": resumePrice!,
                       "owner": 'YourName', // Replace with actual username
-                      "description": resumeTextContent ?? 'No description available.',
+                      "description": resumeTextContent //?? 'No description available.',
                     };
                     print(newResume);
 
