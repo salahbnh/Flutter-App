@@ -5,7 +5,6 @@ import '../services/resume-service.dart';
 class AddResumeScreen extends StatefulWidget {
   @override
   _AddResumeScreenState createState() => _AddResumeScreenState();
-
 }
 
 class _AddResumeScreenState extends State<AddResumeScreen> {
@@ -21,7 +20,6 @@ class _AddResumeScreenState extends State<AddResumeScreen> {
   String resumeContentOption = 'Write';
   String? resumeTextContent;
   String? pdfFilePath;
-
 
   // Dropdown for selecting reference
   Widget _buildReferenceDropdown() {
@@ -189,12 +187,15 @@ class _AddResumeScreenState extends State<AddResumeScreen> {
                     print(newResume);
 
                     // Call the addResume function to send data to backend
-                    bool success = await resumeService.addResume(newResume, pdfFilePath);                    print(success);
+                    bool success = await resumeService.addResume(newResume, pdfFilePath);
+                    print(success);
                     if (success) {
-                      if (mounted) { // Check if the widget is still mounted
+                      if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Resume added successfully!')),
                         );
+                        // Navigate to the Store screen after successful resume addition
+                        Navigator.pushReplacementNamed(context, '/Store');
                       }
                     } else {
                       if (mounted) {
@@ -203,7 +204,6 @@ class _AddResumeScreenState extends State<AddResumeScreen> {
                         );
                       }
                     }
-
                   }
                 },
                 style: ElevatedButton.styleFrom(
@@ -213,7 +213,6 @@ class _AddResumeScreenState extends State<AddResumeScreen> {
                 ),
                 child: Text('Submit'),
               ),
-
             ],
           ),
         ),

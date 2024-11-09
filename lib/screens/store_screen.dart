@@ -26,6 +26,7 @@ class _StoreScreenState extends State<StoreScreen> {
     List<Map<String, dynamic>> fetchedUnpaidCourses = await resumeService.getUnpaidCourses();
     setState(() {
       unpaidCourses = fetchedUnpaidCourses;
+      print("Fetched unpaid courses: $unpaidCourses");  // Debugging
     });
   }
 
@@ -33,8 +34,10 @@ class _StoreScreenState extends State<StoreScreen> {
     List<Map<String, dynamic>> fetchedPaidCourses = await resumeService.fetchPaidCourses();
     setState(() {
       paidCourses = fetchedPaidCourses;
+      print("Fetched paid courses: $paidCourses");  // Debugging
     });
   }
+
 
   void _addToCart(Map<String, dynamic> course) {
     setState(() {
@@ -87,7 +90,7 @@ class _StoreScreenState extends State<StoreScreen> {
               Expanded(
                 child: DropdownButtonFormField<String>(
                   value: selectedReference,
-                  decoration: InputDecoration(labelText: 'Filter by Reference'),
+                  decoration: InputDecoration(labelText: 'Courses'),
                   items: references.map((reference) {
                     return DropdownMenuItem(
                       value: reference,
@@ -105,7 +108,7 @@ class _StoreScreenState extends State<StoreScreen> {
               Expanded(
                 child: DropdownButtonFormField<String>(
                   value: selectedLevel,
-                  decoration: InputDecoration(labelText: 'Filter by Level'),
+                  decoration: InputDecoration(labelText: 'Levels'),
                   items: levels.map((level) {
                     return DropdownMenuItem(
                       value: level,
@@ -160,6 +163,11 @@ class _StoreScreenState extends State<StoreScreen> {
         final course = filteredCourses[index];
         final averageRating = _calculateAverageRating(course['ratings'] ?? []); // Assuming course has 'ratings' field
 
+        // Check if this course is in the paid courses list
+        bool isPaid = paidCourses.any((paidCourse) => paidCourse['_id'] == course['_id']); // Ensure 'id' is the correct identifier
+
+        print("Course ID: ${course['_id']} - isPaid: $isPaid"); // Debugging
+
         return GestureDetector(
           onTap: () {
             Navigator.push(
@@ -182,7 +190,9 @@ class _StoreScreenState extends State<StoreScreen> {
                   Text(" Rating: ${averageRating.toStringAsFixed(1)}", style: TextStyle(color: Colors.amber)),
                 ],
               ),
-              trailing: IconButton(
+              trailing: isPaid
+                  ? null // Do not show cart icon if the course is paid
+                  : IconButton(
                 icon: Icon(Icons.add_shopping_cart),
                 onPressed: () => _addToCart(course),
               ),
@@ -199,11 +209,11 @@ class _StoreScreenState extends State<StoreScreen> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Resume Store'),
+          title: Text('MoodleStore'),
           bottom: TabBar(
             tabs: [
-              Tab(text: 'Store Courses'),
-              Tab(text: 'My Courses'),
+              Tab(text: 'ShopResume'),
+              Tab(text: 'MyCourses'),
             ],
           ),
           actions: [
