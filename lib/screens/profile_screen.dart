@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/widgets/custom_appBar.dart';
 import '/widgets/custom_drawer.dart';
+import 'dart:io';
+import '/services/user_service.dart';
 import 'dart:convert';
 
 class ProfileScreen extends StatefulWidget {
@@ -16,47 +19,102 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool isEditingEmail = false;
   bool isEditingPhone = false;
   bool isEditingInstitution = false;
+  bool isSaving = false;
 
+  String userId = '';
   String userName = 'username';
   String userEmail = 'username@example.com';
   String userPhone = '28 000 000';
   String institution = 'ESPRIT';
-  String profilePictureUrl = 'assets/images/default_profile.png';
+  File? profileImage;
+  final AuthService _authService = AuthService();
 
   @override
   void initState() {
     super.initState();
-    getUserData();
+    loadUserData();
   }
 
-  Future<void> getUserData() async {
+  Future<void> loadUserData() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? userData = prefs.getString('user');
-    String? token = prefs.getString('token');
+    print('SharedPreferences data:');
+    prefs.getKeys().forEach((key) {
+      print('$key: ${prefs.get(key)}');
+    });
 
-    if (userData != null) {
-      final parsedData = jsonDecode(userData);
+    setState(() {
+      String? userJson = prefs.getString('user');
+      if (userJson != null) {
+        final userData = jsonDecode(userJson);
+        userId = userData['_id'] ?? '';
+        userName = userData['username'] ?? 'username';
+        userEmail = userData['email'] ?? 'username@example.com';
+        userPhone = userData['phone'] ?? '28 000 000';
+        institution = userData['institution'] ?? 'ESPRIT';
+      }
+
+      String? imagePath = prefs.getString('profileImage');
+      if (imagePath != null) {
+        profileImage = File(imagePath);
+      }
+    });
+  }
+
+  Future<void> pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
       setState(() {
-        userName = parsedData['name'] ?? userName;
-        userEmail = parsedData['email'] ?? userEmail;
-        userPhone = parsedData['phone'] ?? userPhone;
-        institution = parsedData['institution'] ?? institution;
-        profilePictureUrl = parsedData['profilePicture'] ?? profilePictureUrl;
+        profileImage = File(pickedFile.path);
       });
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('profileImage', pickedFile.path);
     }
   }
 
-  Future<void> _saveUserData() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final updatedUserData = jsonEncode({
-      'name': userName,
-      'email': userEmail,
-      'phone': userPhone,
-      'institution': institution,
-      'profilePicture': profilePictureUrl,
+  Future<void> saveChanges() async {
+    setState(() {
+      isSaving = true;
     });
-    await prefs.setString('user', updatedUserData);
-    print('Saved changes');
+
+    final bool success = await _authService.modifyUser(
+      userId,
+      userName,
+      userEmail,
+      userPhone,
+      institution,
+      null,
+      profileImage != null ? XFile(profileImage!.path) : null,
+    );
+
+    if (success) {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final Map<String, dynamic> updatedUserData = {
+        '_id': userId,
+        'username': userName,
+        'email': userEmail,
+        'phone': userPhone,
+        'institution': institution,
+      };
+
+      await prefs.setString('user', jsonEncode(updatedUserData));
+    }
+
+    setState(() {
+      isSaving = false;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(success
+            ? 'User profile updated successfully'
+            : 'Failed to update profile'),
+      ),
+    );
+
+    if (success) {
+      loadUserData();
+    }
   }
 
   @override
@@ -73,70 +131,66 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            // User Avatar
             Center(
-              child: CircleAvatar(
-                backgroundColor: Colors.blueAccent,
-                radius: 50,
-                backgroundImage: profilePictureUrl.startsWith('http')
-                    ? NetworkImage(profilePictureUrl)
-                    : AssetImage(profilePictureUrl) as ImageProvider,
+              child: Stack(
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.orange.shade300,
+                    radius: 60,
+                    backgroundImage: profileImage != null
+                        ? FileImage(profileImage!)
+                        : const AssetImage('assets/images/moodle.png') as ImageProvider,
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: GestureDetector(
+                      onTap: pickImage,
+                      child: CircleAvatar(
+                        backgroundColor: Colors.white,
+                        radius: 20,
+                        child: Icon(Icons.camera_alt, color: Colors.blue[900]),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
-
-            // User Name
+            const SizedBox(height: 20),
             _buildEditableField(
-                'Name',
-                userName,
-                isEditingName,
-                    () => setState(() => isEditingName = !isEditingName)
+                'Name', userName, isEditingName, (value) => setState(() => userName = value)),
+            ListTile(
+              leading: Icon(Icons.badge, color: Colors.blue[900]),
+              title: const Text('Role', style: TextStyle(fontWeight: FontWeight.w500)),
+              subtitle: const Text('Student'),
             ),
-
-            // Role (non-editable)
-            const ListTile(
-              leading: Icon(Icons.badge),
-              title: Text('Role'),
-              subtitle: Text('Student'),  // Assuming "Student" is the role
-            ),
-
-            // Email
             _buildEditableField(
-                'Email',
-                userEmail,
-                isEditingEmail,
-                    () => setState(() => isEditingEmail = !isEditingEmail)
-            ),
-
-            // Phone Number
+                'Email', userEmail, isEditingEmail, (value) => setState(() => userEmail = value)),
             _buildEditableField(
-                'Phone Number',
-                userPhone,
-                isEditingPhone,
-                    () => setState(() => isEditingPhone = !isEditingPhone)
-            ),
-
-            // Institution
+                'Phone Number', userPhone, isEditingPhone, (value) => setState(() => userPhone = value)),
             _buildEditableField(
-                'Institution',
-                institution,
-                isEditingInstitution,
-                    () => setState(() => isEditingInstitution = !isEditingInstitution)
-            ),
+                'Institution', institution, isEditingInstitution, (value) => setState(() => institution = value)),
 
-            const SizedBox(height: 24),
-
-            // Save Button
+            const SizedBox(height: 30),
             Center(
               child: SizedBox(
-                width: 400,
+                width: 350,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: _saveUserData,
+                  onPressed: isSaving ? null : saveChanges,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue[800],
+                    backgroundColor: Colors.blue[900],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    elevation: 5,
                   ),
-                  child: const Text('Save Changes', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white)),
+                  child: isSaving
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                    'Save Changes',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
+                  ),
                 ),
               ),
             ),
@@ -146,35 +200,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Editable Field Builder
-  Widget _buildEditableField(String title, String value, bool isEditing, VoidCallback onEditPressed) {
+  Widget _buildEditableField(String title, String value, bool isEditing, Function(String) onChanged) {
     return ListTile(
-      leading: Icon(_getIconForTitle(title)),
+      leading: Icon(_getIconForTitle(title), color: Colors.blue[900]),
       title: isEditing
           ? TextFormField(
         initialValue: value,
-        onChanged: (newValue) {
-          setState(() {
-            if (title == 'Name') userName = newValue;
-            else if (title == 'Email') userEmail = newValue;
-            else if (title == 'Phone Number') userPhone = newValue;
-            else if (title == 'Institution') institution = newValue;
-          });
-        },
+        onChanged: onChanged,
         decoration: InputDecoration(
           labelText: title,
+          labelStyle: TextStyle(color: Colors.blue.shade900),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.blue.shade900),
+          ),
         ),
       )
-          : Text(title),
-      subtitle: isEditing ? null : Text(value),
+          : Text(value, style: const TextStyle(fontSize: 16)),
       trailing: IconButton(
-        icon: Icon(isEditing ? Icons.check : Icons.edit),
-        onPressed: onEditPressed,
+        icon: Icon(isEditing ? Icons.check : Icons.edit, color: Colors.blue[900]),
+        onPressed: () => setState(() {
+          if (isEditing) {
+            onChanged(value);
+          }
+          _toggleEditField(title);
+        }),
       ),
     );
   }
 
-  // Icon Selector
+  void _toggleEditField(String field) {
+    setState(() {
+      if (field == 'Name') isEditingName = !isEditingName;
+      if (field == 'Email') isEditingEmail = !isEditingEmail;
+      if (field == 'Phone Number') isEditingPhone = !isEditingPhone;
+      if (field == 'Institution') isEditingInstitution = !isEditingInstitution;
+    });
+  }
+
   IconData _getIconForTitle(String title) {
     switch (title) {
       case 'Name':

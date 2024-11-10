@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
 
 class AuthService {
   final String baseUrl = 'http://10.0.2.2:3000';
@@ -65,6 +66,51 @@ class AuthService {
       }
     } catch (error) {
       print('Login error: $error');
+      return false;
+    }
+  }
+
+  Future<bool> modifyUser(
+      String userId,
+      String username,
+      String email,
+      String phone,
+      String institution,
+      String? password,
+      XFile? profilePicture,
+      ) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? token = prefs.getString('token');
+    final url = Uri.parse('$baseUrl/api/user/$userId');
+    final request = http.MultipartRequest('PUT', url);
+
+    request.headers['Authorization'] = 'Bearer $token';
+
+    request.fields['username'] = username;
+    request.fields['email'] = email;
+    request.fields['phone'] = phone;
+    request.fields['institution'] = institution;
+    if (password != null && password.isNotEmpty) {
+      request.fields['password'] = password;
+    }
+    if (profilePicture != null) {
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'profilePicture',
+          profilePicture.path,
+        ),
+      );
+    }
+
+    try {
+      final response = await request.send();
+
+      final responseData = await response.stream.bytesToString();
+      print('Server response: $responseData');
+
+      return response.statusCode == 200;
+    } catch (e) {
+      print('Modify user error: $e');
       return false;
     }
   }
