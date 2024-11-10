@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'PaymentFormPage.dart';
 
 class PaymentPage extends StatelessWidget {
   final List<Map<String, dynamic>> cart;
@@ -8,7 +9,17 @@ class PaymentPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Print the contents of the cart to debug
+    print("Cart Contents: $cart");
+
+    // Calculate the total cost
     double totalCost = cart.fold(0, (sum, item) => sum + (item['price'] ?? 0));
+
+    // Function to clear the cart
+    void clearCart() {
+      cart.clear(); // Clear all items from the cart
+      Navigator.pop(context); // Navigate back after clearing
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -34,7 +45,7 @@ class PaymentPage extends StatelessWidget {
                     trailing: IconButton(
                       icon: Icon(Icons.remove_circle, color: Colors.red),
                       onPressed: () {
-                        onRemoveFromCart(course); // Remove from cart callback
+                        onRemoveFromCart(course);
                       },
                     ),
                   ),
@@ -65,17 +76,45 @@ class PaymentPage extends StatelessWidget {
         color: Colors.grey[200],
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.teal, // Use backgroundColor for button color
+            backgroundColor: Colors.teal,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12.0),
             ),
             padding: EdgeInsets.symmetric(vertical: 16.0),
           ),
           onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Proceeding to payment...')),
-            );
+            // Debugging: Check cart contents before proceeding to payment
+            print('Cart contents: $cart'); // Print the entire cart
+
+            // Check if cart is not empty
+            if (cart.isNotEmpty) {
+              var firstCourse = cart[0]; // Get the first course
+              var courseId = firstCourse['_id']; // Get the '_id' of the first course
+
+              print('First course ID: $courseId'); // Print the course ID
+
+              // Proceed only if the course ID is not null
+              if (courseId != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PaymentFormPage(
+                      totalCost: totalCost,
+                      onPaymentSuccess: () {
+                        clearCart(); // Clear cart after payment success
+                      },
+                      courseId: courseId,  // Pass the valid course ID to the next page
+                    ),
+                  ),
+                );
+              } else {
+                print('Course ID is null!'); // Print if the course ID is missing
+              }
+            } else {
+              print('Cart is empty!'); // Print if the cart is empty
+            }
           },
+
           child: Text(
             'Proceed to Payment',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),

@@ -1,27 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart'; // Ensure you have this package added in pubspec.yaml
-import '../models/Resume.dart'; // Import your Resume model
+import 'package:file_picker/file_picker.dart';
+import '../services/resume-service.dart';
 
 class AddResumeScreen extends StatefulWidget {
-  final Function(Map<String, dynamic>) onResumeAdded; // Expecting Map<String, dynamic>
-
-  AddResumeScreen({required this.onResumeAdded});
-
   @override
   _AddResumeScreenState createState() => _AddResumeScreenState();
 }
 
 class _AddResumeScreenState extends State<AddResumeScreen> {
   final _formKey = GlobalKey<FormState>();
+  final ResumeService resumeService = ResumeService(); // Create ResumeService instance
 
-  // Form Fields
-  String selectedReference = 'Math'; // Default selected reference
+  String selectedReference = 'Math';
   List<String> references = ['Math', 'Physics', 'Biology', 'Chemistry'];
-  String selectedLevel = 'Beginner'; // Default selected level
+  String selectedLevel = 'Beginner';
   List<String> levels = ['Beginner', 'Intermediate', 'Advanced'];
   String? resumeTitle;
   double? resumePrice;
-  String resumeContentOption = 'Write'; // Default content option
+  String resumeContentOption = 'Write';
   String? resumeTextContent;
   String? pdfFilePath;
 
@@ -129,7 +125,7 @@ class _AddResumeScreenState extends State<AddResumeScreen> {
               SizedBox(height: 16),
               _buildReferenceDropdown(),
               SizedBox(height: 16),
-              _buildLevelDropdown(), // Add the level dropdown here
+              _buildLevelDropdown(),
               SizedBox(height: 16),
               TextFormField(
                 decoration: InputDecoration(labelText: 'Price'),
@@ -152,7 +148,7 @@ class _AddResumeScreenState extends State<AddResumeScreen> {
                   onChanged: (value) {
                     setState(() {
                       resumeContentOption = value!;
-                      pdfFilePath = null; // Reset pdf path if switching to text
+                      pdfFilePath = null;
                     });
                   },
                 ),
@@ -165,7 +161,7 @@ class _AddResumeScreenState extends State<AddResumeScreen> {
                   onChanged: (value) {
                     setState(() {
                       resumeContentOption = value!;
-                      resumeTextContent = null; // Reset text if switching to PDF
+                      resumeTextContent = null;
                     });
                   },
                 ),
@@ -173,21 +169,48 @@ class _AddResumeScreenState extends State<AddResumeScreen> {
               _buildResumeContentInput(),
               SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (_formKey.currentState!.validate()) {
+                    print('Form is valid.'); // Check if this prints
                     _formKey.currentState!.save();
+                    print('Form has been saved.'); // Check if this prints
+
+                    // Prepare the resume data
                     Map<String, dynamic> newResume = {
                       "title": resumeTitle!,
                       "reference": selectedReference,
-                      "level": selectedLevel, // Add level to the resume
+                      "level": selectedLevel,
                       "price": resumePrice!,
-                      "owner": 'YourName', // Replace with the actual username
-                      "description": resumeTextContent ?? 'No description available.',
+                      "owner": 'YourName', // Replace with actual username
+                      "description": resumeTextContent //?? 'No description available.',
                     };
-                    widget.onResumeAdded(newResume); // Call the callback to add resume
-                    Navigator.pop(context); // Go back to store screen
+                    print(newResume);
+
+                    // Call the addResume function to send data to backend
+                    bool success = await resumeService.addResume(newResume, pdfFilePath);
+                    print(success);
+                    if (success) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Resume added successfully!')),
+                        );
+                        // Navigate to the Store screen after successful resume addition
+                        Navigator.pushReplacementNamed(context, '/Store');
+                      }
+                    } else {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Failed to add resume')),
+                        );
+                      }
+                    }
                   }
                 },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                ),
                 child: Text('Submit'),
               ),
             ],

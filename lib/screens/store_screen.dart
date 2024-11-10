@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'ResumeDetailsPage.dart';
 import 'add_resume.dart';
 import 'PaymentPage.dart';
+import '../services/resume-service.dart';
 
 class StoreScreen extends StatefulWidget {
   @override
@@ -9,49 +10,48 @@ class StoreScreen extends StatefulWidget {
 }
 
 class _StoreScreenState extends State<StoreScreen> {
-  final List<Map<String, dynamic>> storeCourses = [
-    {
-      "title": "Store Course 1",
-      "classLevel": "Grade 12",
-      "price": 30.0,
-      "reference": "Physics",
-      "owner": "User C",
-      "description": "An in-depth course on Grade 12 Physics.",
-      "averageRating": 4.5,
-    },
-    {
-      "title": "Store Course 2",
-      "classLevel": "Grade 11",
-      "price": 25.0,
-      "reference": "Chemistry",
-      "owner": "User D",
-      "description": "A comprehensive course on Chemistry.",
-      "averageRating": 3.8,
-    },
-    // Add more store courses as needed...
-  ];
+  final ResumeService resumeService = ResumeService();
+  List<Map<String, dynamic>> unpaidCourses = [];
+  List<Map<String, dynamic>> paidCourses = [];
+  List<Map<String, dynamic>> cart = [];
 
-  List<Map<String, dynamic>> cart = []; // List to hold selected courses for payment
+  @override
+  void initState() {
+    super.initState();
+    _fetchUnpaidCourses();
+    _fetchPaidCourses();
+  }
+
+  void _fetchUnpaidCourses() async {
+    List<Map<String, dynamic>> fetchedUnpaidCourses = await resumeService.getUnpaidCourses();
+    setState(() {
+      unpaidCourses = fetchedUnpaidCourses;
+      print("Fetched unpaid courses: $unpaidCourses");  // Debugging
+    });
+  }
+
+  void _fetchPaidCourses() async {
+    List<Map<String, dynamic>> fetchedPaidCourses = await resumeService.fetchPaidCourses();
+    setState(() {
+      paidCourses = fetchedPaidCourses;
+      print("Fetched paid courses: $paidCourses");  // Debugging
+    });
+  }
+
 
   void _addToCart(Map<String, dynamic> course) {
     setState(() {
-      cart.add(course); // Add the selected course to the cart
+      cart.add(course);
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('${course['title']} added to cart!')),
     );
   }
 
-  void _onResumeAdded(Map<String, dynamic> newResume) {
-    print("New Resume Added: $newResume");
-  }
-
   void _addCourse() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => AddResumeScreen(onResumeAdded: _onResumeAdded),
-      ),
+      MaterialPageRoute(builder: (context) => AddResumeScreen()),
     );
   }
 
@@ -61,8 +61,8 @@ class _StoreScreenState extends State<StoreScreen> {
   double selectedMaxPrice = 100.0;
   String selectedLevel = 'All';
 
-  List<String> references = ['All', 'Mathematics', 'Science', 'Physics', 'Chemistry', 'Biology'];
-  List<String> levels = ['All', 'Grade 10', 'Grade 11', 'Grade 12'];
+  List<String> references = ['All', 'Math', 'Science', 'Physics', 'Chemistry', 'Biology'];
+  List<String> levels = ['All', 'Beginner', 'Intermediate', 'Advanced'];
 
   Widget _buildSearchAndFilter() {
     return Padding(
@@ -90,7 +90,7 @@ class _StoreScreenState extends State<StoreScreen> {
               Expanded(
                 child: DropdownButtonFormField<String>(
                   value: selectedReference,
-                  decoration: InputDecoration(labelText: 'Filter by Reference'),
+                  decoration: InputDecoration(labelText: 'Courses'),
                   items: references.map((reference) {
                     return DropdownMenuItem(
                       value: reference,
@@ -108,7 +108,7 @@ class _StoreScreenState extends State<StoreScreen> {
               Expanded(
                 child: DropdownButtonFormField<String>(
                   value: selectedLevel,
-                  decoration: InputDecoration(labelText: 'Filter by Level'),
+                  decoration: InputDecoration(labelText: 'Levels'),
                   items: levels.map((level) {
                     return DropdownMenuItem(
                       value: level,
@@ -127,7 +127,7 @@ class _StoreScreenState extends State<StoreScreen> {
                 child: Slider(
                   value: selectedMaxPrice,
                   min: 0,
-                  max: 100.0,
+                  max: 500.0,
                   divisions: 10,
                   label: 'Max Price: \$${selectedMaxPrice.round()}',
                   onChanged: (value) {
@@ -144,11 +144,16 @@ class _StoreScreenState extends State<StoreScreen> {
     );
   }
 
+  double _calculateAverageRating(List<dynamic> ratings) {
+    if (ratings.isEmpty) return 0.0;
+    return ratings.reduce((a, b) => a + b) / ratings.length;
+  }
+
   Widget _buildCourseList(List<Map<String, dynamic>> courses) {
     final filteredCourses = courses.where((course) {
       final matchesSearch = searchQuery.isEmpty || course['title'].toLowerCase().contains(searchQuery.toLowerCase());
       final matchesReference = selectedReference == 'All' || course['reference'] == selectedReference;
-      final matchesLevel = selectedLevel == 'All' || course['classLevel'] == selectedLevel;
+      final matchesLevel = selectedLevel == 'All' || course['level']?.toLowerCase().trim() == selectedLevel.toLowerCase().trim();
       return matchesSearch && matchesReference && matchesLevel && (course['price'] == null || course['price'] <= selectedMaxPrice);
     }).toList();
 
@@ -156,13 +161,18 @@ class _StoreScreenState extends State<StoreScreen> {
       itemCount: filteredCourses.length,
       itemBuilder: (context, index) {
         final course = filteredCourses[index];
+        final averageRating = _calculateAverageRating(course['ratings'] ?? []); // Assuming course has 'ratings' field
+
+        // Check if this course is in the paid courses list
+        bool isPaid = paidCourses.any((paidCourse) => paidCourse['_id'] == course['_id']); // Ensure 'id' is the correct identifier
+
+        print("Course ID: ${course['_id']} - isPaid: $isPaid"); // Debugging
+
         return GestureDetector(
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => ResumeDetailsPage(resume: course),
-              ),
+              MaterialPageRoute(builder: (context) => ResumeDetailsPage(resume: course)),
             );
           },
           child: Card(
@@ -173,17 +183,18 @@ class _StoreScreenState extends State<StoreScreen> {
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Level: ${course['classLevel']}"),
+                  Text("Level: ${course['level']}"),
                   Text("Reference: ${course['reference']}"),
                   Text("Owner: ${course['owner']}"),
                   if (course.containsKey('price')) Text("Price: \$${course['price']}"),
-                  if (course.containsKey('averageRating'))
-                    Text("Average Rating: ${course['averageRating'].toStringAsFixed(1)}", style: TextStyle(color: Colors.amber)),
+                  Text(" Rating: ${averageRating.toStringAsFixed(1)}", style: TextStyle(color: Colors.amber)),
                 ],
               ),
-              trailing: IconButton(
+              trailing: isPaid
+                  ? null // Do not show cart icon if the course is paid
+                  : IconButton(
                 icon: Icon(Icons.add_shopping_cart),
-                onPressed: () => _addToCart(course), // Add course to cart
+                onPressed: () => _addToCart(course),
               ),
             ),
           ),
@@ -198,11 +209,11 @@ class _StoreScreenState extends State<StoreScreen> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Resume Store'),
+          title: Text('MoodleStore'),
           bottom: TabBar(
             tabs: [
-              Tab(text: 'Store Courses'),
-              Tab(text: 'My Courses'),
+              Tab(text: 'ShopResume'),
+              Tab(text: 'MyCourses'),
             ],
           ),
           actions: [
@@ -218,7 +229,7 @@ class _StoreScreenState extends State<StoreScreen> {
                           cart: cart,
                           onRemoveFromCart: (course) {
                             setState(() {
-                              cart.remove(course); // Remove the course from the cart
+                              cart.remove(course);
                             });
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text('${course['title']} removed from cart!')),
@@ -263,28 +274,8 @@ class _StoreScreenState extends State<StoreScreen> {
             Expanded(
               child: TabBarView(
                 children: [
-                  _buildCourseList(storeCourses),
-                  DefaultTabController(
-                    length: 2,
-                    child: Column(
-                      children: [
-                        TabBar(
-                          tabs: [
-                            Tab(text: 'Completed Courses'),
-                            Tab(text: 'Progress Courses'),
-                          ],
-                        ),
-                        Expanded(
-                          child: TabBarView(
-                            children: [
-                              _buildCourseList([]), // Empty for now
-                              _buildCourseList([]), // Empty for now
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  _buildCourseList(unpaidCourses),
+                  _buildCourseList(paidCourses),
                 ],
               ),
             ),
@@ -292,7 +283,6 @@ class _StoreScreenState extends State<StoreScreen> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: _addCourse,
-          tooltip: 'Add Course',
           child: Icon(Icons.add),
         ),
       ),
