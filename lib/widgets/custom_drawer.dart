@@ -1,4 +1,3 @@
-// custom_drawer.dart
 import 'package:flutter/material.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -56,10 +55,17 @@ class CustomDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.video_library), // Icon for the module
-            title: const Text('Round Tables & Webinars'), // Title in English
+            leading: const Icon(Icons.video_library),
+            title: const Text('Round Tables & Webinars'),
             onTap: () {
               Navigator.pushNamed(context, '/roundTablesWebinars');
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.book), // Icon for the exam tab
+            title: const Text('Examen'), // New exam tab
+            onTap: () {
+              Navigator.pushNamed(context, '/examen');
             },
           ),
           const ListTile(
@@ -70,7 +76,6 @@ class CustomDrawer extends StatelessWidget {
             leading: Icon(Icons.logout),
             title: Text('Logout'),
           ),
-
         ],
       ),
     );

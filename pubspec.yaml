@@ -28,15 +28,20 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  http: ^0.13.3
   flutter:
     sdk: flutter
-
-
+  file_picker: ^5.2.5 # Check for the latest version on pub.dev
+  flutter_pdfview: ^1.0.0 # Check for the latest version on pub.dev
+  shared_preferences: ^2.0.15
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   form_field_validator: ^1.1.0
   fluttertoast: ^8.0.9
+  hive: ^2.0.4
+  hive_flutter: ^1.1.0
+  path_provider: ^2.0.11
 
 dev_dependencies:
   flutter_test:

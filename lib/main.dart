@@ -5,7 +5,7 @@ import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
-
+import 'screens/examen_screen.dart'; // Import your exam screen
 void main() {
   runApp(const MyApp());
 }
@@ -30,6 +30,7 @@ class MyApp extends StatelessWidget {
         '/profile': (context) => const ProfileScreen(),
         '/roundTablesWebinars': (context) => const RoundTablesWebinarsScreen(),
         '/addWebinar': (context) => const AddWebinarScreen(), // Add the new route
+        '/examen': (context) => ExamenScreen(),
       },
     );
   }
