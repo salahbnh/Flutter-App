@@ -2,9 +2,22 @@ import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/profile_screen.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'screens/store_screen.dart';
 
-void main() {
+void main() async {
+  // Ensure that Flutter bindings are initialized
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Hive
+  await Hive.initFlutter();
+
+  // Open the Hive boxes
+  await Hive.openBox('login');
+  await Hive.openBox('accounts');
+
+  // Run the app
   runApp(const MyApp());
 }
 
@@ -21,10 +34,12 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/login',
       routes: {
-        '/login': (context) => LoginScreen(),
-        '/register': (context) => RegisterScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/register': (context) =>  RegisterScreen(),
         '/home': (context) => const HomeScreen(),
         '/Store':(context) => StoreScreen(),
+        '/profile': (context) => const ProfileScreen(),
+
       },
     );
   }

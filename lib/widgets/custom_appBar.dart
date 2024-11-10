@@ -4,15 +4,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final bool isLoggedIn;
   final String? userImageUrl;
-  final Color backgroundColor;
-
 
   const CustomAppBar({
     Key? key,
     required this.title,
     required this.isLoggedIn,
-    this.userImageUrl,
-    required this.backgroundColor,
+    this.userImageUrl, required Color backgroundColor,
   }) : super(key: key);
 
   @override
@@ -26,7 +23,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           fontWeight: FontWeight.bold,
         ),
       ),
-      backgroundColor: backgroundColor,
+      backgroundColor: Colors.blue[900],
       actions: isLoggedIn
           ? [
         Builder(

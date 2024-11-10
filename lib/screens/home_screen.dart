@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '/widgets/custom_appBar.dart';
 import 'store_screen.dart';
+import '/widgets/custom_drawer.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -58,25 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _appBars[_currentIndex], // Set appBar based on selected tab
-      endDrawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue[800],
-              ),
-              child: const Text('User Name', style: TextStyle(color: Colors.white, fontSize: 24)),
-            ),
-            const ListTile(
-              title: Text('Profile'),
-            ),
-            const ListTile(
-              title: Text('Settings'),
-            ),
-          ],
-        ),
-      ),
+      endDrawer: const CustomDrawer(),
       // Display the selected screen widget from _screens based on the selected index
       body: _screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
