@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:moodle_app/screens/addwebinars_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../models/webinar.dart';
 import 'webinarsdetails_screen.dart';
@@ -12,14 +13,32 @@ class RoundTablesWebinarsScreen extends StatefulWidget {
   State<RoundTablesWebinarsScreen> createState() => _RoundTablesWebinarsScreenState();
 }
 
+
 class _RoundTablesWebinarsScreenState extends State<RoundTablesWebinarsScreen> {
   List<Webinar> webinars = [];
   bool isLoading = true;
+  String userName = 'Username';
+  String userRole = 'Role';
 
   @override
   void initState() {
     super.initState();
     _fetchWebinars();
+  }
+  Future<void> loadUserData() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      // Load user data from the 'user' JSON string
+      String? userJson = prefs.getString('user');
+      if (userJson != null) {
+        final userData = jsonDecode(userJson);
+        userName = userData['username'] ?? 'Username';
+        userRole = userData['role'] ?? 'Role'; // Assuming 'role' is part of user data
+      }
+      // Load profile image path and create a File object if it exists
+      // Set loading to false once data is loaded
+      isLoading = false;
+    });
   }
 
   Future<void> _fetchWebinars() async {
@@ -86,7 +105,7 @@ class _RoundTablesWebinarsScreenState extends State<RoundTablesWebinarsScreen> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton:userRole=="Instructor"? FloatingActionButton(
         onPressed: () {
           // Navigate to the Add Webinar screen
           Navigator.push(
@@ -98,7 +117,7 @@ class _RoundTablesWebinarsScreenState extends State<RoundTablesWebinarsScreen> {
         },
         child: const Icon(Icons.add),
         tooltip: 'Add Webinar',
-      ),
+      ):Container(),
     );
   }
 }

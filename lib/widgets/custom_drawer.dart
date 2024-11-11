@@ -106,9 +106,17 @@ class _CustomDrawerState extends State<CustomDrawer> {
             onTap: () => Navigator.pushNamed(context, '/profile'),
           ),
           _buildDrawerItem(
+            icon: Icons.video_library, // Icon for the module
+            text: 'Round Tables & Webinars', // Title in English
+            onTap: () {
+              Navigator.pushNamed(context, '/roundTablesWebinars');
+            },
+          ),
+          _buildDrawerItem(
             icon: Icons.settings,
             text: 'Settings',
           ),
+
           _buildDrawerItem(
             icon: Icons.logout,
             text: 'Logout',
@@ -119,21 +127,6 @@ class _CustomDrawerState extends State<CustomDrawer> {
               // Navigate to the LoginScreen and remove all previous routes
               Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
             },
-          ),
-          ListTile(
-            leading: const Icon(Icons.video_library), // Icon for the module
-            title: const Text('Round Tables & Webinars'), // Title in English
-            onTap: () {
-              Navigator.pushNamed(context, '/roundTablesWebinars');
-            },
-          ),
-          const ListTile(
-            leading: Icon(Icons.settings),
-            title: Text('Settings'),
-          ),
-          const ListTile(
-            leading: Icon(Icons.logout),
-            title: Text('Logout'),
           ),
 
         ],
