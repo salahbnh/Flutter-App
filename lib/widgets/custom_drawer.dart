@@ -125,8 +125,10 @@ class _CustomDrawerState extends State<CustomDrawer> {
               await prefs.clear(); // Clear all saved data
 
               // Navigate to the LoginScreen and remove all previous routes
-              Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
-            },
+
+              print('Redirecting to login screen');
+              Navigator.of(context).pushReplacementNamed('/login');
+              },
           ),
 
         ],
