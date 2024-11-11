@@ -42,7 +42,7 @@ class _RoundTablesWebinarsScreenState extends State<RoundTablesWebinarsScreen> {
   }
 
   Future<void> _fetchWebinars() async {
-    final url = Uri.parse('http://10.0.2.2:3000/webinars');
+    final url = Uri.parse('http://10.0.2.2:3000/api/webinar');
     try {
       final response = await http.get(url);
 
@@ -105,7 +105,7 @@ class _RoundTablesWebinarsScreenState extends State<RoundTablesWebinarsScreen> {
           );
         },
       ),
-      floatingActionButton:userRole=="Instructor"? FloatingActionButton(
+      floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Navigate to the Add Webinar screen
           Navigator.push(
@@ -117,7 +117,9 @@ class _RoundTablesWebinarsScreenState extends State<RoundTablesWebinarsScreen> {
         },
         child: const Icon(Icons.add),
         tooltip: 'Add Webinar',
-      ):Container(),
+      )
+          ,
+
     );
   }
 }

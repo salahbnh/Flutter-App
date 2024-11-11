@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:moodle_app/services/user_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../models/webinar.dart';
 
@@ -17,43 +19,60 @@ class _WebinarDetailsScreenState extends State<WebinarDetailsScreen> {
   bool isRegistered = false;
   bool isLoading = true;
   bool isFull = false;
+  String userId = '';
+  String userName = 'username';
+  String userEmail = 'username@example.com';
+  Future<void> loadUserData() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      // Load user data from the 'user' JSON string
+      String? userJson = prefs.getString('user');
+      if (userJson != null) {
+        final userData = jsonDecode(userJson);
+        userName = userData['username'] ?? 'Username';
+        userId = userData['_id'] ?? '';
+      }
+      print(userId);
+      isLoading = false;
+    });
+  }
 
   Future<void> checkRegistrationStatus() async {
+    setState(() => isLoading = true);
+
+
     try {
+      print("userid is $userId");
       final response = await http.get(
-        Uri.parse(
-            'http://10.0.2.2:3000/registrations/${widget.webinar.id}?userId=$dummyUserId'),
+        Uri.parse('http://10.0.2.2:3000/api/registration/${widget.webinar.id}/$userId'),
       );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
         setState(() {
-          isRegistered = data['isRegistered'];
+          isRegistered = data['isRegistered'] ?? false;
           isLoading = false;
         });
       } else {
-        setState(() {
-          isLoading = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to fetch registration status.')),
-        );
+        _showErrorMessage('Failed to fetch registration status.');
       }
     } catch (error) {
-      setState(() {
-        isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('An error occurred!')),
-      );
+      _showErrorMessage('An error occurred!');
     }
+  }
+
+  void _showErrorMessage(String message) {
+    setState(() => isLoading = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   Future<void> checkWebinarFullStatus() async {
     try {
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:3000/webinars/${widget.webinar.id}'),
+        Uri.parse('http://10.0.2.2:3000/api/webinar/${widget.webinar.id}'),
       );
 
       if (response.statusCode == 200) {
@@ -87,13 +106,12 @@ class _WebinarDetailsScreenState extends State<WebinarDetailsScreen> {
   Future<void> registerForWebinar(BuildContext context) async {
     try {
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:3000/registrations/register'),
+        Uri.parse('http://10.0.2.2:3000/api/registration/register/${widget.webinar.id}/$userId'), // Pass webinarId as a route parameter
         headers: {
           'Content-Type': 'application/json',
         },
         body: json.encode({
-          'userId': dummyUserId,
-          'webinarId': widget.webinar.id,
+          'userId': userId, // Pass the userId in the request body
         }),
       );
 
@@ -119,8 +137,11 @@ class _WebinarDetailsScreenState extends State<WebinarDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    checkRegistrationStatus();
-    checkWebinarFullStatus();
+    Future.microtask(() async {
+      await loadUserData(); // Wait for loadUserData to complete
+      await checkRegistrationStatus(); // Only then call checkRegistrationStatus
+      checkWebinarFullStatus(); // Call checkWebinarFullStatus last
+    });
   }
 
   @override
