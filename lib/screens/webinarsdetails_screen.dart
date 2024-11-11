@@ -13,12 +13,11 @@ class WebinarDetailsScreen extends StatefulWidget {
 }
 
 class _WebinarDetailsScreenState extends State<WebinarDetailsScreen> {
-  final String dummyUserId = "60c72b2f9af1f5c015a1e1c2"; // Dummy userId for testing
+  final String dummyUserId = "60c72b2f9af1f5c015a1e1c2";
   bool isRegistered = false;
   bool isLoading = true;
-  bool isFull = false; // Add a flag to track if the webinar is full
+  bool isFull = false;
 
-  // Function to check if the user is registered for the webinar
   Future<void> checkRegistrationStatus() async {
     try {
       final response = await http.get(
@@ -28,7 +27,6 @@ class _WebinarDetailsScreenState extends State<WebinarDetailsScreen> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print("Registration Data: $data");  // Log the response data
 
         setState(() {
           isRegistered = data['isRegistered'];
@@ -52,7 +50,6 @@ class _WebinarDetailsScreenState extends State<WebinarDetailsScreen> {
     }
   }
 
-// Function to check if the webinar has reached its participant limit
   Future<void> checkWebinarFullStatus() async {
     try {
       final response = await http.get(
@@ -61,20 +58,18 @@ class _WebinarDetailsScreenState extends State<WebinarDetailsScreen> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print("Webinar Data: $data");  // Log the entire response data for debugging
+        print("Webinar Data: $data");
 
-        // Check the values of currentParticipants and maxParticipants
-        int currentParticipants = data['currentParticipants'] ?? 0; // Default to 0 if key doesn't exist
+
+        int currentParticipants = data['currentParticipants'] ?? 0;
         int maxParticipants = widget.webinar.maxParticipants;
 
-        print("Current Participants: $currentParticipants, Max Participants: $maxParticipants"); // Log these values
+        print("Current Participants: $currentParticipants, Max Participants: $maxParticipants");
 
-        // Check if the webinar is full
         setState(() {
           isFull = currentParticipants >= maxParticipants;
         });
       } else {
-        // Error from server, log response
         print("Error: ${response.statusCode}");
         print("Response body: ${response.body}");
         ScaffoldMessenger.of(context).showSnackBar(
@@ -82,7 +77,6 @@ class _WebinarDetailsScreenState extends State<WebinarDetailsScreen> {
         );
       }
     } catch (error) {
-      // Catch network or JSON parsing errors
       print("Error checking webinar capacity: $error");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('An error occurred while checking capacity.')),
@@ -90,7 +84,6 @@ class _WebinarDetailsScreenState extends State<WebinarDetailsScreen> {
     }
   }
 
-  // Function to handle registration
   Future<void> registerForWebinar(BuildContext context) async {
     try {
       final response = await http.post(
@@ -126,8 +119,8 @@ class _WebinarDetailsScreenState extends State<WebinarDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    checkRegistrationStatus(); // Check registration status when the screen is loaded
-    checkWebinarFullStatus(); // Check if the webinar is full
+    checkRegistrationStatus();
+    checkWebinarFullStatus();
   }
 
   @override
@@ -156,7 +149,7 @@ class _WebinarDetailsScreenState extends State<WebinarDetailsScreen> {
             ),
             const SizedBox(height: 8),
             isLoading
-                ? const Center(child: CircularProgressIndicator()) // Loading state
+                ? const Center(child: CircularProgressIndicator())
                 : isRegistered
                 ? SelectableText(
               widget.webinar.meetLink,
@@ -173,7 +166,7 @@ class _WebinarDetailsScreenState extends State<WebinarDetailsScreen> {
                 : ElevatedButton(
               onPressed: () => registerForWebinar(context),
               child: const Text('Register for Webinar'),
-            ), // If not full, show register button
+            ),
           ],
         ),
       ),
