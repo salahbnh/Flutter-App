@@ -54,7 +54,6 @@ class _LoginState extends State<LoginScreen> {
     }
   }
 
-  LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
