@@ -22,7 +22,7 @@ class _WebinarDetailsScreenState extends State<WebinarDetailsScreen> {
     try {
       final response = await http.get(
         Uri.parse(
-            'http://192.168.56.1:3005/registrations/${widget.webinar.id}?userId=$dummyUserId'),
+            'http://10.0.2.2:3000/registrations/${widget.webinar.id}?userId=$dummyUserId'),
       );
 
       if (response.statusCode == 200) {
@@ -53,7 +53,7 @@ class _WebinarDetailsScreenState extends State<WebinarDetailsScreen> {
   Future<void> checkWebinarFullStatus() async {
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.56.1:3005/webinars/${widget.webinar.id}'),
+        Uri.parse('http://10.0.2.2:3000/webinars/${widget.webinar.id}'),
       );
 
       if (response.statusCode == 200) {
@@ -87,7 +87,7 @@ class _WebinarDetailsScreenState extends State<WebinarDetailsScreen> {
   Future<void> registerForWebinar(BuildContext context) async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.56.1:3005/registrations/register'),
+        Uri.parse('http://10.0.2.2:3000/registrations/register'),
         headers: {
           'Content-Type': 'application/json',
         },

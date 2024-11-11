@@ -42,7 +42,7 @@ class _RoundTablesWebinarsScreenState extends State<RoundTablesWebinarsScreen> {
   }
 
   Future<void> _fetchWebinars() async {
-    final url = Uri.parse('http://192.168.56.1:3005/webinars');
+    final url = Uri.parse('http://10.0.2.2:3000/webinars');
     try {
       final response = await http.get(url);
 

@@ -23,7 +23,7 @@ class _AddWebinarScreenState extends State<AddWebinarScreen> {
   DateTime date = DateTime.now();
 
   Future<void> _addWebinar() async {
-    final url = Uri.parse('http://192.168.56.1:3005/webinars');
+    final url = Uri.parse('http://10.0.2.2:3000/webinars');
 
     try {
       final response = await http.post(
