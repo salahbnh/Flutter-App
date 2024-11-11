@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:moodle_app/screens/addwebinars_screen.dart';
+import 'package:moodle_app/screens/examen_screen.dart';
+import 'package:moodle_app/screens/forumHome.dart';
+import 'package:moodle_app/screens/forumpage.dart';
 import 'package:moodle_app/screens/webinars_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
@@ -43,6 +46,10 @@ class MyApp extends StatelessWidget {
         '/profile': (context) => const ProfileScreen(),
         '/roundTablesWebinars': (context) => const RoundTablesWebinarsScreen(),
         '/addWebinar': (context) => const AddWebinarScreen(), // Add the new route
+        '/examen': (context) => ExamenScreen(),
+        '/forumPage': (context) => ForumPage(),
+        '/forumHome': (context) => ForumHome(),
+
       },
     );
   }

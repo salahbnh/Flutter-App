@@ -1,7 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../screens/login_screen.dart';
 
 class CustomDrawer extends StatefulWidget {
   const CustomDrawer({Key? key}) : super(key: key);
@@ -124,10 +127,17 @@ class _CustomDrawerState extends State<CustomDrawer> {
               final SharedPreferences prefs = await SharedPreferences.getInstance();
               await prefs.clear(); // Clear all saved data
 
-              // Navigate to the LoginScreen and remove all previous routes
+              Navigator.of(context).pop(); // Close the drawer
 
-              print('Redirecting to login screen');
-              Navigator.of(context).pushReplacementNamed('/login');
+              // Clear Hive login box as well, for consistency
+              final loginBox = Hive.box("login");
+              await loginBox.clear();
+
+              // Navigate to LoginScreen, clearing all previous routes
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (context) => LoginScreen()),
+                    (Route<dynamic> route) => false,
+              );
               },
           ),
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:moodle_app/screens/forumHome.dart';
 import '/widgets/custom_appBar.dart';
+import 'examen_screen.dart';
 import 'store_screen.dart';
 import '/widgets/custom_drawer.dart';
 
@@ -28,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Colors.blue[600]!,
     ),
     CustomAppBar(
-      title: 'Notifications',
+      title: 'Forum',
       isLoggedIn: true,
       userImageUrl: 'assets/images/moodle.png',
       backgroundColor: Colors.blue[600]!,
@@ -39,14 +41,21 @@ class _HomeScreenState extends State<HomeScreen> {
       userImageUrl: 'assets/images/moodle.png',
       backgroundColor: Colors.blue[600]!,
     ),
+    CustomAppBar(
+      title: 'Exams',
+      isLoggedIn: true,
+      userImageUrl: 'assets/images/moodle.png',
+      backgroundColor: Colors.blue[600]!,
+    ),
   ];
 
   // Define a list of widgets for each tab in BottomNavigationBar
   final List<Widget> _screens = [
     const Center(child: Text('Welcome to the Moodle App')), // Home screen content
     const Center(child: Text('Courses')),                   // Courses screen content
-    const Center(child: Text('Notifications')),             // Notifications screen content
-    StoreScreen(),                                    // Store screen content
+    ForumHome(),
+    StoreScreen(),                                          // Store screen content
+    ExamenScreen(),                                          // Exams screen content
   ];
 
   void _onItemTapped(int index) {
@@ -101,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: Icon(Icons.notifications),
             ),
-            label: 'Notifications',
+            label: 'Forum',
           ),
           BottomNavigationBarItem(
             icon: Container(
@@ -113,6 +122,17 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Icon(Icons.store),
             ),
             label: 'Store',
+          ),
+          BottomNavigationBarItem(
+            icon: Container(
+              padding: EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.book),
+            ),
+            label: 'Exams',
           ),
         ],
       ),
